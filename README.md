@@ -17,6 +17,7 @@
 Ho progettato il gestionale con 2 principali intenti: 
 1 - Rendere le funzioni del gestionale il più adattabili possibile in base alle esigenze
 2 - Gestire più lavoro possibile con il server, lasciando il client il più "leggero" possibile, infatti come si può notare le dimensioni del server confrontate con il client sono decisamente maggiori
+3 - Rendere possibile la connessione a più utenti alla volta tramite l'utilizzo del multithreading
 Le funzionalità disponibili non sono tante ma decentemente personalizzabili:
 
 1-Select con scelta dei campi visualizzabili oltre che possibilità di imporre varie condizioni a scelta, per rendere la ricerca via via piu complessa
