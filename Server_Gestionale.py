@@ -319,47 +319,45 @@ def delete_record(conn_client,cur,conn,lock):
 #---------------------------------------------------------------------------------------------------------------
     
 def db_insert_into(conn_client,lock):
+    conn=F.conn_to_database('127.0.0.1','root','','azienda',3306)
+    cur = conn.cursor()
+    nome_tabella = scegli_nome_tabella(cur,conn_client)
+    cur.execute(f'SELECT * FROM {nome_tabella}')
+    cur.fetchall()
+    '''
+    porz_query = create_query_insert(cur)
+    print(nome_tabella)
+    query = f"""INSERT INTO {nome_tabella}{porz_query}"""
+    '''
+    field_names = [i[0] for i in cur.description]
+    query = create_query_insert(nome_tabella, field_names[1::])
+    print(query)
+    valori = []
+    k=-1
+    while(True):
+        k+=1
+        valori.append([])
+        
+        for i in range(1,len(field_names)):
+            ins = manage_single_input(conn_client,field_names[i],field_names,cur,f'Inserisci {field_names[i]}',0)
+            valori[k].append(ins)
+        scelta=0
+        
+        while(scelta<1 or scelta>2):
+            scelta=int(F.input_send('Inserisci\n1-Continua\n2-Concludi\n-->',conn_client))
+        if scelta==2:break
     with lock:
-        conn=F.conn_to_database('127.0.0.1','root','','azienda',3306)
-        cur = conn.cursor()
-        nome_tabella = scegli_nome_tabella(cur,conn_client)
+        for i in valori:
+            conn_client.send(f"{query}'\n' {i}".encode())
+            cur.execute(query,tuple(i))
+            conn.commit()
+        conn_client.send(f'Record inseriti correttamente, ecco come si presenta la tabella {nome_tabella}...'.encode())
+        conn_client.recv(1024)
         cur.execute(f'SELECT * FROM {nome_tabella}')
-        cur.fetchall()
-        '''
-        porz_query = create_query_insert(cur)
-        print(nome_tabella)
-        query = f"""INSERT INTO {nome_tabella}{porz_query}"""
-        '''
-        field_names = [i[0] for i in cur.description]
-        query = create_query_insert(nome_tabella, field_names[1::])
-        print(query)
-        valori = []
-        k=-1
-        while(True):
-            k+=1
-            valori.append([])
+        data = cur.fetchall()
+        F.send_a_list(data,conn_client)
             
-            for i in range(1,len(field_names)):
-                ins = manage_single_input(conn_client,field_names[i],field_names,cur,f'Inserisci {field_names[i]}',0)
-                valori[k].append(ins)
-            scelta=0
-            
-            while(scelta<1 or scelta>2):
-                scelta=int(F.input_send('Inserisci\n1-Continua\n2-Concludi\n-->',conn_client))
-            if scelta==2:break
-        with lock:
-            for i in valori:
-                conn_client.send(f"{query}'\n' {i}".encode())
-                cur.execute(query,tuple(i))
-                conn.commit()
-            conn_client.send(f'Record inseriti correttamente, ecco come si presenta la tabella {nome_tabella}...'.encode())
-            conn_client.recv(1024)
-            cur.execute(f'SELECT * FROM {nome_tabella}')
-            data = cur.fetchall()
-            F.send_a_list(data,conn_client)
-
-
-
+           
 
 def db_read(conn_client):
     conn=F.conn_to_database('127.0.0.1','root','','azienda',3306)
